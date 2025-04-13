@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Interval Generator</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        button { padding: 10px 15px; margin-top: 10px; }
+        select { padding: 10px; margin-right: 10px; }
+        .interval-item { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="radio"] { margin-right: 10px; }
+        label { cursor: pointer; }
+        .token-input { margin: 20px 0; }
+        .token-input input[type="text"] { padding: 8px; width: 500px; margin-top: 5px; }
+        .form-group { margin-bottom: 15px; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ccc; }
+        .tab { padding: 10px 20px; cursor: pointer; }
+        .tab.active { background-color: #f0f0f0; border-bottom: 2px solid #007bff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .manual-input-container { margin-top: 20px; }
+        .manual-input-container input[type="datetime-local"] { padding: 8px; margin-top: 5px; }
+        .error { color: red; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Generate Time Intervals</h1>
+    
+    <div class="token-input">
+        <h2>Token Configuration</h2>
+        <div class="form-group">
+            <label for="token_address">Solana Token Address:</label><br>
+            <input type="text" id="token_address" name="token_address" value="6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN" style="width: 100%;">
+            <small>Default: Trump Token (6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN)</small>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('random')">随机生成时间</div>
+        <div class="tab" onclick="switchTab('manual')">手动输入时间</div>
+    </div>
+    
+    <div id="random-tab" class="tab-content active">
+        <form action="/generate" method="post">
+            <input type="hidden" name="token_address" id="token_address_hidden_random">
+            <button type="submit" onclick="copyTokenAddressRandom()">Generate Random Interval</button>
+        </form>
+    </div>
+    
+    <div id="manual-tab" class="tab-content">
+        <div class="manual-input-container">
+            <h3>手动输入时间范围 (格式: YYYY-MM-DD HH:MM:SS)</h3>
+            <form id="manual-time-form" action="/confirm" method="post" onsubmit="return validateTimeForm()">
+                <div class="form-group">
+                    <label for="manual_start_time">开始时间:</label><br>
+                    <input type="text" id="manual_start_time" name="start_time" placeholder="例如: 2025-04-13 12:00:00" style="width: 300px;">
+                    <div id="start_time_error" class="error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="manual_end_time">结束时间:</label><br>
+                    <input type="text" id="manual_end_time" name="end_time" placeholder="例如: 2025-04-13 20:00:00" style="width: 300px;">
+                    <div id="end_time_error" class="error"></div>
+                </div>
+                
+                <input type="hidden" name="token_address" id="token_address_hidden_manual">
+                <button type="submit" onclick="copyTokenAddressManual()">Confirm Manual Input</button>
+            </form>
+        </div>
+    </div>
+
+    {% if intervals %}
+    <h2>Select an Interval</h2>
+    <form action="/confirm" method="post">
+         {% for interval in intervals %}
+            <div class="interval-item">
+                 <!-- Use radio buttons for single selection -->
+                 <input type="radio" id="interval_{{ loop.index }}" name="selected_interval_index" value="{{ loop.index0 }}" {% if loop.first %}checked{% endif %} required>
+                 <label for="interval_{{ loop.index }}">Start: {{ interval.start }}, End: {{ interval.end }}</label>
+                 <!-- Hidden inputs associated with this radio button -->
+                 <input type="hidden" name="start_time" value="{{ interval.start }}">
+                 <input type="hidden" name="end_time" value="{{ interval.end }}">
+            </div>
+         {% endfor %}
+         
+         <!-- Add token input to the form -->
+         <input type="hidden" name="token_address" value="{{ token_address }}">
+         
+         <button type="submit">Confirm Selection</button>
+    </form>
+    {% else %}
+        {% if request.method == 'POST' %}
+            <p>No intervals were generated. Please check the script or try again.</p>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        // Tab switching logic
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        }
+        
+        // Copy the token address from the input field to the hidden inputs
+        function copyTokenAddressRandom() {
+            const tokenInput = document.getElementById('token_address');
+            const hiddenInput = document.getElementById('token_address_hidden_random');
+            hiddenInput.value = tokenInput.value;
+        }
+        
+        function copyTokenAddressManual() {
+            const tokenInput = document.getElementById('token_address');
+            const hiddenInput = document.getElementById('token_address_hidden_manual');
+            hiddenInput.value = tokenInput.value;
+        }
+        
+        // Validate time format before form submission
+        function validateTimeForm() {
+            let isValid = true;
+            const startTimeInput = document.getElementById('manual_start_time');
+            const endTimeInput = document.getElementById('manual_end_time');
+            const startTimeError = document.getElementById('start_time_error');
+            const endTimeError = document.getElementById('end_time_error');
+            
+            // Clear previous errors
+            startTimeError.textContent = '';
+            endTimeError.textContent = '';
+            
+            // Time format regex: YYYY-MM-DD HH:MM:SS
+            const timeFormatRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+            
+            // Validate start time
+            if (!timeFormatRegex.test(startTimeInput.value)) {
+                startTimeError.textContent = '时间格式不正确，请使用 YYYY-MM-DD HH:MM:SS 格式（例如: 2025-04-13 12:00:00）';
+                isValid = false;
+            }
+            
+            // Validate end time
+            if (!timeFormatRegex.test(endTimeInput.value)) {
+                endTimeError.textContent = '时间格式不正确，请使用 YYYY-MM-DD HH:MM:SS 格式（例如: 2025-04-13 20:00:00）';
+                isValid = false;
+            }
+            
+            // Check if end time is after start time
+            if (isValid) {
+                const startDate = new Date(startTimeInput.value.replace(' ', 'T'));
+                const endDate = new Date(endTimeInput.value.replace(' ', 'T'));
+                
+                if (endDate <= startDate) {
+                    endTimeError.textContent = '结束时间必须晚于开始时间';
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+    </script>
+</body>
+</html>

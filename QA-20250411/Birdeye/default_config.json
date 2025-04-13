@@ -1,0 +1,29 @@
+{
+  "common_parameters": {
+    "address": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+    "api_key_header": "X-API-KEY",
+    "base_url": "https://public-api.birdeye.so"
+  },
+  "ohlcv_requests": [
+    {
+      "name": "1m_interval_request",
+      "endpoint": "/defi/ohlcv",
+      "query_params": {
+        "address": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+        "type": "1m",
+        "time_from": 0,
+        "time_to": 0
+      }
+    },
+    {
+      "name": "1H_interval_request",
+      "endpoint": "/defi/ohlcv",
+      "query_params": {
+        "address": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+        "type": "1H",
+        "time_from": 0,
+        "time_to": 0
+      }
+    }
+  ]
+}

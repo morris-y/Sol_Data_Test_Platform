@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation</title>
+     <style>
+        body { font-family: sans-serif; margin: 20px; }
+        a.button, button { 
+            display: inline-block; 
+            margin-top: 20px; 
+            text-decoration: none; 
+            padding: 10px 15px; 
+            border-radius: 4px; 
+            font-size: 1em;
+            font-family: inherit;
+            cursor: pointer;
+            line-height: 1.5;
+            height: 42px;
+            box-sizing: border-box;
+            border: none;
+        }
+        a.button { 
+            background-color: #007bff; 
+            color: white; 
+        }
+        a.button:hover { background-color: #0056b3; }
+        p { margin-bottom: 20px; }
+        .button-container { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+        .button-container form { margin: 0; }
+        .button-container button { 
+            background-color: #28a745; 
+            color: white; 
+        }
+        .button-container button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <h1>SQL Files Created Successfully!</h1>
+    
+    <p><strong>Selected Token:</strong> <code>{{ token_address }}</code></p>
+    
+    <p><strong>Selected Interval:</strong> {{ interval }}</p>
+    <p><strong>SQL Files Location:</strong><br>
+    {% for path in sql_paths %}
+        {{ path }}<br>
+    {% endfor %}
+    </p>
+    
+    {% if birdeye_script_path %}
+    <p><strong>Birdeye Fetcher Script:</strong><br>{{ birdeye_script_path }}</p>
+    <p><strong>Time Conversion:</strong><br>
+        Original (GMT+8): {{ interval }}<br>
+        UTC (GMT+0): {{ utc_interval }}
+    </p>
+    {% endif %}
+    
+    <div class="button-container">
+        <a href="/" class="button">Generate Another Interval</a>
+        {% if birdeye_script_path %}
+        <form action="/run_birdeye_fetcher" method="post">
+            <input type="hidden" name="script_filename" value="{{ birdeye_script_path | basename }}">
+            <input type="hidden" name="start_time" value="{{ utc_start_time }}">
+            <input type="hidden" name="end_time" value="{{ utc_end_time }}">
+            <input type="hidden" name="token_address" value="{{ token_address }}">
+            <button type="submit" class="button">Fetch Birdeye Data</button>
+        </form>
+        {% endif %}
+    </div>
+</body>
+</html>

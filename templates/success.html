@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success - Hubble QA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hubble QA Tool</h1>
+        </header>
+        
+        <div class="content">
+            <div class="success-message">
+                <h2>Operation Successful!</h2>
+                <div class="message">
+                    {{ message|safe }}
+                </div>
+                <div class="instructions">
+                    <p>A new terminal window has been opened where the Birdeye data fetcher is running.</p>
+                    <p>You can monitor the progress there. Once it's finished, check the output CSV files in:</p>
+                    <code>QA-20250411/Birdeye/output_csv/</code>
+                </div>
+                <div class="actions">
+                    <a href="/" class="button">Return to Home</a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Hubble QA Tool &copy; 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
